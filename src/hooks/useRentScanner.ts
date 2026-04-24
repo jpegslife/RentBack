@@ -105,46 +105,19 @@ export function useRentScanner() {
       const feeWalletPubkey = new PublicKey(FEE_WALLET)
       const signatures: string[] = []
 
-      console.log('[v0] Starting claim for', accounts.length, 'accounts')
-      console.log('[v0] Fee wallet:', FEE_WALLET)
-      console.log('[v0] Fee percent:', FEE_PERCENT)
-
-      // Batch accounts into groups of 5 (smaller batches for reliability)
-      const BATCH_SIZE = 5
+      // Batch accounts into groups of 10 (Solana tx size limit)
+      const BATCH_SIZE = 10
       const batches: CloseableAccount[][] = []
       for (let i = 0; i < accounts.length; i += BATCH_SIZE) {
         batches.push(accounts.slice(i, i + BATCH_SIZE))
       }
 
-      console.log('[v0] Processing', batches.length, 'batches')
-
       for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
         const batch = batches[batchIdx]
         const tx = new Transaction()
 
-        console.log('[v0] Batch', batchIdx + 1, 'contains', batch.length, 'accounts')
-
-        // Calculate fee for this batch FIRST (from user's existing balance)
-        const batchLamports = batch.reduce((sum, a) => sum + a.lamports, 0)
-        const feeLamports = Math.floor(batchLamports * (FEE_PERCENT / 100))
-
-        console.log('[v0] Batch lamports:', batchLamports, 'Fee lamports:', feeLamports)
-
-        // Add fee transfer FIRST (before closing accounts)
-        // This uses the user's existing balance
-        if (feeLamports > 0) {
-          tx.add(
-            SystemProgram.transfer({
-              fromPubkey: publicKey,
-              toPubkey: feeWalletPubkey,
-              lamports: feeLamports,
-            })
-          )
-        }
-
-        // Then close each account in this batch, sending lamports to user
+        // Close each account in this batch, sending lamports to user
         for (const acct of batch) {
-          console.log('[v0] Closing account:', acct.pubkey.toBase58(), 'program:', acct.programId.toBase58())
           tx.add(
             createCloseAccountInstruction(
               acct.pubkey,   // account to close
@@ -156,32 +129,26 @@ export function useRentScanner() {
           )
         }
 
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed')
+        // Calculate fee for this batch
+        const batchLamports = batch.reduce((sum, a) => sum + a.lamports, 0)
+        const feeLamports = Math.floor(batchLamports * (FEE_PERCENT / 100))
+
+        if (feeLamports > 0) {
+          tx.add(
+            SystemProgram.transfer({
+              fromPubkey: publicKey,
+              toPubkey: feeWalletPubkey,
+              lamports: feeLamports,
+            })
+          )
+        }
+
+        const { blockhash } = await connection.getLatestBlockhash()
         tx.recentBlockhash = blockhash
         tx.feePayer = publicKey
 
-        console.log('[v0] Sending transaction for batch', batchIdx + 1)
-        
-        const sig = await sendTransaction(tx, connection, {
-          skipPreflight: false,
-          preflightCommitment: 'confirmed',
-        })
-        
-        console.log('[v0] Transaction sent:', sig)
-        
-        // Wait for confirmation with timeout
-        const confirmation = await connection.confirmTransaction({
-          signature: sig,
-          blockhash,
-          lastValidBlockHeight,
-        }, 'confirmed')
-
-        if (confirmation.value.err) {
-          console.error('[v0] Transaction failed:', confirmation.value.err)
-          throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`)
-        }
-
-        console.log('[v0] Transaction confirmed:', sig)
+        const sig = await sendTransaction(tx, connection)
+        await connection.confirmTransaction(sig, 'confirmed')
         signatures.push(sig)
       }
 
@@ -189,7 +156,6 @@ export function useRentScanner() {
       setAccounts([])
       setStatus('claimed')
     } catch (e: unknown) {
-      console.error('[v0] Claim error:', e)
       const errorMessage = e instanceof Error ? e.message : 'Transaction failed or was rejected.'
       setError(errorMessage)
       setStatus('error')
