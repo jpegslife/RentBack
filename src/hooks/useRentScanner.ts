@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Connection, PublicKey, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js'
+import { PublicKey, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { createCloseAccountInstruction, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { SystemProgram } from '@solana/web3.js'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
@@ -56,8 +56,9 @@ export function useRentScanner() {
 
       setAccounts(closeable)
       setStatus('done')
-    } catch (e: any) {
-      setError(e?.message ?? 'Failed to scan accounts. Check your RPC endpoint.')
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to scan accounts. Check your RPC endpoint.'
+      setError(errorMessage)
       setStatus('error')
     }
   }, [publicKey, connection])
@@ -119,8 +120,9 @@ export function useRentScanner() {
       setTxSignatures(signatures)
       setAccounts([])
       setStatus('claimed')
-    } catch (e: any) {
-      setError(e?.message ?? 'Transaction failed or was rejected.')
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Transaction failed or was rejected.'
+      setError(errorMessage)
       setStatus('error')
     }
   }, [publicKey, accounts, connection, sendTransaction])
