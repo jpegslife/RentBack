@@ -1,0 +1,238 @@
+import {
+  BaseMessageSignerWalletAdapter,
+  WalletConfigError,
+  WalletConnectionError,
+  WalletDisconnectedError,
+  WalletDisconnectionError,
+  WalletError,
+  WalletLoadError,
+  WalletNotConnectedError,
+  WalletNotReadyError,
+  WalletPublicKeyError,
+  WalletReadyState,
+  WalletSendTransactionError,
+  WalletSignMessageError,
+  WalletSignTransactionError,
+  isIosAndRedirectable,
+  isVersionedTransaction,
+  scopePollingDetectionStrategy
+} from "./chunk-ARNHW4ZI.js";
+import {
+  PublicKey
+} from "./chunk-AMMUP6YJ.js";
+import "./chunk-4B2QHNJT.js";
+
+// node_modules/.pnpm/@solana+wallet-adapter-solflare@0.6.33_@solana+web3.js@1.98.4_bufferutil@4.1.0_typescript@5.7.3_utf-8-validate@6.0.6_/node_modules/@solana/wallet-adapter-solflare/lib/esm/adapter.js
+var SolflareWalletName = "Solflare";
+var SolflareWalletAdapter = class extends BaseMessageSignerWalletAdapter {
+  constructor(config = {}) {
+    super();
+    this.name = SolflareWalletName;
+    this.url = "https://solflare.com";
+    this.icon = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJTIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiMwMjA1MGE7c3Ryb2tlOiNmZmVmNDY7c3Ryb2tlLW1pdGVybGltaXQ6MTA7c3Ryb2tlLXdpZHRoOi41cHg7fS5jbHMtMntmaWxsOiNmZmVmNDY7fTwvc3R5bGU+PC9kZWZzPjxyZWN0IGNsYXNzPSJjbHMtMiIgeD0iMCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMTIiIHJ5PSIxMiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTI0LjIzLDI2LjQybDIuNDYtMi4zOCw0LjU5LDEuNWMzLjAxLDEsNC41MSwyLjg0LDQuNTEsNS40MywwLDEuOTYtLjc1LDMuMjYtMi4yNSw0LjkzbC0uNDYuNS4xNy0xLjE3Yy42Ny00LjI2LS41OC02LjA5LTQuNzItNy40M2wtNC4zLTEuMzhoMFpNMTguMDUsMTEuODVsMTIuNTIsNC4xNy0yLjcxLDIuNTktNi41MS0yLjE3Yy0yLjI1LS43NS0zLjAxLTEuOTYtMy4zLTQuNTF2LS4wOGgwWk0xNy4zLDMzLjA2bDIuODQtMi43MSw1LjM0LDEuNzVjMi44LjkyLDMuNzYsMi4xMywzLjQ2LDUuMThsLTExLjY1LTQuMjJoMFpNMTMuNzEsMjAuOTVjMC0uNzkuNDItMS41NCwxLjEzLTIuMTcuNzUsMS4wOSwyLjA1LDIuMDUsNC4wOSwyLjcxbDQuNDIsMS40Ni0yLjQ2LDIuMzgtNC4zNC0xLjQyYy0yLS42Ny0yLjg0LTEuNjctMi44NC0yLjk2TTI2LjgyLDQyLjg3YzkuMTgtNi4wOSwxNC4xMS0xMC4yMywxNC4xMS0xNS4zMiwwLTMuMzgtMi01LjI2LTYuNDMtNi43MmwtMy4zNC0xLjEzLDkuMTQtOC43Ny0xLjg0LTEuOTYtMi43MSwyLjM4LTEyLjgxLTQuMjJjLTMuOTcsMS4yOS04Ljk3LDUuMDktOC45Nyw4Ljg5LDAsLjQyLjA0LjgzLjE3LDEuMjktMy4zLDEuODgtNC42MywzLjYzLTQuNjMsNS44LDAsMi4wNSwxLjA5LDQuMDksNC41NSw1LjIybDIuNzUuOTItOS41Miw5LjE0LDEuODQsMS45NiwyLjk2LTIuNzEsMTQuNzMsNS4yMmgwWiIvPjwvc3ZnPg==";
+    this.supportedTransactionVersions = /* @__PURE__ */ new Set(["legacy", 0]);
+    this._readyState = typeof window === "undefined" || typeof document === "undefined" ? WalletReadyState.Unsupported : WalletReadyState.Loadable;
+    this._disconnected = () => {
+      const wallet = this._wallet;
+      if (wallet) {
+        wallet.off("disconnect", this._disconnected);
+        this._wallet = null;
+        this._publicKey = null;
+        this.emit("error", new WalletDisconnectedError());
+        this.emit("disconnect");
+      }
+    };
+    this._accountChanged = (newPublicKey) => {
+      if (!newPublicKey)
+        return;
+      const publicKey = this._publicKey;
+      if (!publicKey)
+        return;
+      try {
+        newPublicKey = new PublicKey(newPublicKey.toBytes());
+      } catch (error) {
+        this.emit("error", new WalletPublicKeyError(error == null ? void 0 : error.message, error));
+        return;
+      }
+      if (publicKey.equals(newPublicKey))
+        return;
+      this._publicKey = newPublicKey;
+      this.emit("connect", newPublicKey);
+    };
+    this._connecting = false;
+    this._publicKey = null;
+    this._wallet = null;
+    this._config = config;
+    if (this._readyState !== WalletReadyState.Unsupported) {
+      scopePollingDetectionStrategy(() => {
+        var _a;
+        if (((_a = window.solflare) == null ? void 0 : _a.isSolflare) || window.SolflareApp) {
+          this._readyState = WalletReadyState.Installed;
+          this.emit("readyStateChange", this._readyState);
+          return true;
+        }
+        return false;
+      });
+    }
+  }
+  get publicKey() {
+    return this._publicKey;
+  }
+  get connecting() {
+    return this._connecting;
+  }
+  get connected() {
+    var _a;
+    return !!((_a = this._wallet) == null ? void 0 : _a.connected);
+  }
+  get readyState() {
+    return this._readyState;
+  }
+  async autoConnect() {
+    if (!(this.readyState === WalletReadyState.Loadable && isIosAndRedirectable())) {
+      await this.connect();
+    }
+  }
+  async connect() {
+    try {
+      if (this.connected || this.connecting)
+        return;
+      if (this._readyState !== WalletReadyState.Loadable && this._readyState !== WalletReadyState.Installed)
+        throw new WalletNotReadyError();
+      if (this.readyState === WalletReadyState.Loadable && isIosAndRedirectable()) {
+        const url = encodeURIComponent(window.location.href);
+        const ref = encodeURIComponent(window.location.origin);
+        window.location.href = `https://solflare.com/ul/v1/browse/${url}?ref=${ref}`;
+        return;
+      }
+      let SolflareClass;
+      try {
+        SolflareClass = (await import("./esm-XEZFCKCS.js")).default;
+      } catch (error) {
+        throw new WalletLoadError(error == null ? void 0 : error.message, error);
+      }
+      let wallet;
+      try {
+        wallet = new SolflareClass({ network: this._config.network });
+      } catch (error) {
+        throw new WalletConfigError(error == null ? void 0 : error.message, error);
+      }
+      this._connecting = true;
+      if (!wallet.connected) {
+        try {
+          await wallet.connect();
+        } catch (error) {
+          throw new WalletConnectionError(error == null ? void 0 : error.message, error);
+        }
+      }
+      if (!wallet.publicKey)
+        throw new WalletConnectionError();
+      let publicKey;
+      try {
+        publicKey = new PublicKey(wallet.publicKey.toBytes());
+      } catch (error) {
+        throw new WalletPublicKeyError(error == null ? void 0 : error.message, error);
+      }
+      wallet.on("disconnect", this._disconnected);
+      wallet.on("accountChanged", this._accountChanged);
+      this._wallet = wallet;
+      this._publicKey = publicKey;
+      this.emit("connect", publicKey);
+    } catch (error) {
+      this.emit("error", error);
+      throw error;
+    } finally {
+      this._connecting = false;
+    }
+  }
+  async disconnect() {
+    const wallet = this._wallet;
+    if (wallet) {
+      wallet.off("disconnect", this._disconnected);
+      wallet.off("accountChanged", this._accountChanged);
+      this._wallet = null;
+      this._publicKey = null;
+      try {
+        await wallet.disconnect();
+      } catch (error) {
+        this.emit("error", new WalletDisconnectionError(error == null ? void 0 : error.message, error));
+      }
+    }
+    this.emit("disconnect");
+  }
+  async sendTransaction(transaction, connection, options = {}) {
+    try {
+      const wallet = this._wallet;
+      if (!wallet)
+        throw new WalletNotConnectedError();
+      try {
+        const { signers, ...sendOptions } = options;
+        if (isVersionedTransaction(transaction)) {
+          (signers == null ? void 0 : signers.length) && transaction.sign(signers);
+        } else {
+          transaction = await this.prepareTransaction(transaction, connection, sendOptions);
+          (signers == null ? void 0 : signers.length) && transaction.partialSign(...signers);
+        }
+        sendOptions.preflightCommitment = sendOptions.preflightCommitment || connection.commitment;
+        return await wallet.signAndSendTransaction(transaction, sendOptions);
+      } catch (error) {
+        if (error instanceof WalletError)
+          throw error;
+        throw new WalletSendTransactionError(error == null ? void 0 : error.message, error);
+      }
+    } catch (error) {
+      this.emit("error", error);
+      throw error;
+    }
+  }
+  async signTransaction(transaction) {
+    try {
+      const wallet = this._wallet;
+      if (!wallet)
+        throw new WalletNotConnectedError();
+      try {
+        return await wallet.signTransaction(transaction) || transaction;
+      } catch (error) {
+        throw new WalletSignTransactionError(error == null ? void 0 : error.message, error);
+      }
+    } catch (error) {
+      this.emit("error", error);
+      throw error;
+    }
+  }
+  async signAllTransactions(transactions) {
+    try {
+      const wallet = this._wallet;
+      if (!wallet)
+        throw new WalletNotConnectedError();
+      try {
+        return await wallet.signAllTransactions(transactions) || transactions;
+      } catch (error) {
+        throw new WalletSignTransactionError(error == null ? void 0 : error.message, error);
+      }
+    } catch (error) {
+      this.emit("error", error);
+      throw error;
+    }
+  }
+  async signMessage(message) {
+    try {
+      const wallet = this._wallet;
+      if (!wallet)
+        throw new WalletNotConnectedError();
+      try {
+        return await wallet.signMessage(message, "utf8");
+      } catch (error) {
+        throw new WalletSignMessageError(error == null ? void 0 : error.message, error);
+      }
+    } catch (error) {
+      this.emit("error", error);
+      throw error;
+    }
+  }
+};
+export {
+  SolflareWalletAdapter,
+  SolflareWalletName
+};
+//# sourceMappingURL=@solana_wallet-adapter-solflare.js.map

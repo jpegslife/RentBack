@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
-import { Connection, PublicKey, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js'
-import { createCloseAccountInstruction, TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { PublicKey, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js'
+import { createCloseAccountInstruction, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
 import { SystemProgram } from '@solana/web3.js'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { FEE_WALLET, FEE_PERCENT } from '../config'
@@ -9,6 +9,7 @@ export interface CloseableAccount {
   pubkey: PublicKey
   lamports: number
   mint: string
+  programId: PublicKey
 }
 
 export type ScanStatus = 'idle' | 'scanning' | 'done' | 'claiming' | 'claimed' | 'error'
@@ -35,29 +36,62 @@ export function useRentScanner() {
     setTxSignatures([])
 
     try {
-      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
-        programId: TOKEN_PROGRAM_ID,
-      })
+      console.log('[v0] Starting scan for wallet:', publicKey.toBase58())
+      
+      // Scan both Token Program and Token-2022 Program
+      const [tokenAccounts, token2022Accounts] = await Promise.all([
+        connection.getParsedTokenAccountsByOwner(publicKey, {
+          programId: TOKEN_PROGRAM_ID,
+        }),
+        connection.getParsedTokenAccountsByOwner(publicKey, {
+          programId: TOKEN_2022_PROGRAM_ID,
+        }),
+      ])
+
+      console.log('[v0] Token accounts found:', tokenAccounts.value.length)
+      console.log('[v0] Token-2022 accounts found:', token2022Accounts.value.length)
 
       const closeable: CloseableAccount[] = []
 
+      // Process Token Program accounts
       for (const { pubkey, account } of tokenAccounts.value) {
         const parsed = account.data.parsed?.info
         const amount = parsed?.tokenAmount?.uiAmount ?? 0
+        console.log('[v0] Token account:', pubkey.toBase58(), 'balance:', amount, 'lamports:', account.lamports)
         // Only include zero-balance token accounts (safe to close)
         if (amount === 0) {
           closeable.push({
             pubkey,
             lamports: account.lamports,
             mint: parsed?.mint ?? 'Unknown',
+            programId: TOKEN_PROGRAM_ID,
           })
         }
       }
 
+      // Process Token-2022 accounts
+      for (const { pubkey, account } of token2022Accounts.value) {
+        const parsed = account.data.parsed?.info
+        const amount = parsed?.tokenAmount?.uiAmount ?? 0
+        console.log('[v0] Token-2022 account:', pubkey.toBase58(), 'balance:', amount, 'lamports:', account.lamports)
+        // Only include zero-balance token accounts (safe to close)
+        if (amount === 0) {
+          closeable.push({
+            pubkey,
+            lamports: account.lamports,
+            mint: parsed?.mint ?? 'Unknown',
+            programId: TOKEN_2022_PROGRAM_ID,
+          })
+        }
+      }
+
+      console.log('[v0] Total closeable accounts:', closeable.length)
       setAccounts(closeable)
       setStatus('done')
-    } catch (e: any) {
-      setError(e?.message ?? 'Failed to scan accounts. Check your RPC endpoint.')
+    } catch (e: unknown) {
+      console.error('[v0] Scan error:', e)
+      const errorMessage = e instanceof Error ? e.message : 'Failed to scan accounts. Check your RPC endpoint.'
+      setError(errorMessage)
       setStatus('error')
     }
   }, [publicKey, connection])
@@ -89,6 +123,8 @@ export function useRentScanner() {
               acct.pubkey,   // account to close
               publicKey,     // destination (user receives SOL)
               publicKey,     // authority (user must sign)
+              [],            // multi-signers (none)
+              acct.programId // use correct program (Token or Token-2022)
             )
           )
         }
@@ -119,8 +155,9 @@ export function useRentScanner() {
       setTxSignatures(signatures)
       setAccounts([])
       setStatus('claimed')
-    } catch (e: any) {
-      setError(e?.message ?? 'Transaction failed or was rejected.')
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Transaction failed or was rejected.'
+      setError(errorMessage)
       setStatus('error')
     }
   }, [publicKey, accounts, connection, sendTransaction])

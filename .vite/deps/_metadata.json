@@ -1,0 +1,85 @@
+{
+  "hash": "c92186d0",
+  "configHash": "f84321e4",
+  "lockfileHash": "17a888ab",
+  "browserHash": "d22008f7",
+  "optimized": {
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/.pnpm/react@18.3.1/node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "87f7ccfd",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../node_modules/.pnpm/react@18.3.1/node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "b3db2727",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "b2c3e0f0",
+      "needsInterop": true
+    },
+    "@solana/wallet-adapter-react": {
+      "src": "../../node_modules/.pnpm/@solana+wallet-adapter-react@0.15.39_@solana+web3.js@1.98.4_bufferutil@4.1.0_typescript_5b821de96a73b6d6c58caa6b56c19edb/node_modules/@solana/wallet-adapter-react/lib/esm/index.js",
+      "file": "@solana_wallet-adapter-react.js",
+      "fileHash": "f139e265",
+      "needsInterop": false
+    },
+    "@solana/wallet-adapter-react-ui": {
+      "src": "../../node_modules/.pnpm/@solana+wallet-adapter-react-ui@0.9.39_@solana+web3.js@1.98.4_bufferutil@4.1.0_typescri_c727111f91c5db0416c25608c52e0efd/node_modules/@solana/wallet-adapter-react-ui/lib/esm/index.js",
+      "file": "@solana_wallet-adapter-react-ui.js",
+      "fileHash": "c2265505",
+      "needsInterop": false
+    },
+    "@solana/wallet-adapter-phantom": {
+      "src": "../../node_modules/.pnpm/@solana+wallet-adapter-phantom@0.9.29_@solana+web3.js@1.98.4_bufferutil@4.1.0_typescript@5.7.3_utf-8-validate@6.0.6_/node_modules/@solana/wallet-adapter-phantom/lib/esm/index.js",
+      "file": "@solana_wallet-adapter-phantom.js",
+      "fileHash": "1c2e59cc",
+      "needsInterop": false
+    },
+    "@solana/wallet-adapter-solflare": {
+      "src": "../../node_modules/.pnpm/@solana+wallet-adapter-solflare@0.6.33_@solana+web3.js@1.98.4_bufferutil@4.1.0_typescript@5.7.3_utf-8-validate@6.0.6_/node_modules/@solana/wallet-adapter-solflare/lib/esm/index.js",
+      "file": "@solana_wallet-adapter-solflare.js",
+      "fileHash": "2ce851a5",
+      "needsInterop": false
+    },
+    "@solana/web3.js": {
+      "src": "../../node_modules/.pnpm/@solana+web3.js@1.98.4_bufferutil@4.1.0_typescript@5.7.3_utf-8-validate@6.0.6/node_modules/@solana/web3.js/lib/index.browser.esm.js",
+      "file": "@solana_web3__js.js",
+      "fileHash": "312f89b0",
+      "needsInterop": false
+    },
+    "@solana/spl-token": {
+      "src": "../../node_modules/.pnpm/@solana+spl-token@0.4.14_@solana+web3.js@1.98.4_bufferutil@4.1.0_typescript@5.7.3_utf-8_b9f572f044754470a42e3ab46e0fae08/node_modules/@solana/spl-token/lib/esm/index.js",
+      "file": "@solana_spl-token.js",
+      "fileHash": "1f85fcd9",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "esm-XEZFCKCS": {
+      "file": "esm-XEZFCKCS.js"
+    },
+    "chunk-3M7M334C": {
+      "file": "chunk-3M7M334C.js"
+    },
+    "chunk-LHAA4DOP": {
+      "file": "chunk-LHAA4DOP.js"
+    },
+    "chunk-7L4PC2P2": {
+      "file": "chunk-7L4PC2P2.js"
+    },
+    "chunk-ARNHW4ZI": {
+      "file": "chunk-ARNHW4ZI.js"
+    },
+    "chunk-AMMUP6YJ": {
+      "file": "chunk-AMMUP6YJ.js"
+    },
+    "chunk-4B2QHNJT": {
+      "file": "chunk-4B2QHNJT.js"
+    }
+  }
+}
